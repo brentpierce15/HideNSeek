@@ -26,7 +26,7 @@ import com.google.android.gms.tasks.Task;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-
+    //test
     private GoogleMap mMap;
     private Location mCurrentLocation;
     private FusedLocationProviderClient fusedLocationClient;
