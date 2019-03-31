@@ -1,88 +1,125 @@
 package com.example.hide_n_seek;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    //test
-    private GoogleMap mMap;
-    private Location mCurrentLocation;
-    private FusedLocationProviderClient fusedLocationClient;
+public class MapsActivity extends AppCompatActivity
+        implements OnMapReadyCallback {
+
+    private GoogleMap mGoogleMap;
+    private SupportMapFragment mapFrag;
+    private LocationRequest mLocationRequest;
+    private Location mLastLocation;
+    private Marker mCurrLocationMarker;
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    private String strDateFormat = "hh:mm:ss a";
+    private DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
+
     private int locationRequestCode = 1000;
+    private final int ONE_MINUTE = 1000*60;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
-        }
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        getSupportActionBar().setTitle("HideNSeek");
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                // Got last known location. In some rare situations this can be null.
-                mCurrentLocation = location;
-                if (location != null) {
-                    // Logic to handle location object
-                }
-            }
-        });
+        mFusedLocationClient  = LocationServices.getFusedLocationProviderClient(this);
+        mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFrag.getMapAsync(MapsActivity.this);
     }
 
-    protected void createLocationRequest() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(100000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
+    @Override
+    public void onPause() {
+        super.onPause();
+        //stop location updates when Activity is no longer active
+        if (mFusedLocationClient != null) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        }
     }
-    
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+        mGoogleMap = googleMap;
+        mGoogleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(ONE_MINUTE); // one minute interval
+        mLocationRequest.setFastestInterval(ONE_MINUTE);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            //Location Permission already granted
+            mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+            mGoogleMap.setMyLocationEnabled(true);
+        } else {
+            //Request Location Permission
+           checkLocationPermission();
+        }
+
     }
+    LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            List<Location> locationList = locationResult.getLocations();
+            Log.i("3stuff", ""+locationList.size());
+            if (locationList.size() > 0) {
+                //The last location in the list is the newest
+                Location location = locationList.get(locationList.size() - 1);
+                //Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
+                mLastLocation = location;
+                if (mCurrLocationMarker != null) {
+                    mCurrLocationMarker.remove();
+                }
+
+                //Place current location marker
+                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(latLng);
+                Date date = new Date();
+                String formattedDate= dateFormat.format(date);
+                markerOptions.title(String.format("Player's Location at " + formattedDate ));
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
+                //move map camera
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+            }
+        }
+    };
+
+    private void checkLocationPermission(){
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
+    }
+
 }
