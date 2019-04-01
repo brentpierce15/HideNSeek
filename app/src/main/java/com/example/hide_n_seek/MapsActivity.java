@@ -45,7 +45,7 @@ public class MapsActivity extends AppCompatActivity
     private DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
 
     private int locationRequestCode = 1000;
-    private final int ONE_MINUTE = 1000*60;
+    private final int ONE_MINUTE = 1000*10;
 
 
     @Override
@@ -93,11 +93,9 @@ public class MapsActivity extends AppCompatActivity
         @Override
         public void onLocationResult(LocationResult locationResult) {
             List<Location> locationList = locationResult.getLocations();
-            Log.i("3stuff", ""+locationList.size());
             if (locationList.size() > 0) {
                 //The last location in the list is the newest
                 Location location = locationList.get(locationList.size() - 1);
-                //Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
                 mLastLocation = location;
                 if (mCurrLocationMarker != null) {
                     mCurrLocationMarker.remove();
@@ -110,10 +108,13 @@ public class MapsActivity extends AppCompatActivity
                 Date date = new Date();
                 String formattedDate= dateFormat.format(date);
                 markerOptions.title(String.format("Player's Location at " + formattedDate ));
+                Log.i("Time", "Player's Location at time: " + formattedDate);
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                 mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
                 //move map camera
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+
+                realTimeFirebase.publishGeoLocation(latLng);
             }
         }
     };
