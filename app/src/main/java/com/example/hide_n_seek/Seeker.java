@@ -1,7 +1,5 @@
 package com.example.hide_n_seek;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -10,37 +8,27 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.core.utilities.Tree;
 
-public class realTimeFirebase extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
+import java.util.Map;
+import java.util.TreeMap;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+public class Seeker {
+    private static final String TAG = "Seekers: ";
 
-    public static void publishGeoLocation(LatLng latLng){
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("User's Location:");
-
-    }
-    public void basicReadWrite() {
+    public static void readDatabase() {
         // [START write_message]
         // Write a message to the database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("message");
-        myRef.setValue("Hello, World!");
-        // [END write_message]
+        final DatabaseReference myRef = database.getReference("User's Location2:");
 
-        // [START read_message]
-        // Read from the database
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                Log.d(TAG, "Value is: " + value);
+                Map<Double,Double> latLng = (Map<Double,Double>) dataSnapshot.getValue();
+                Log.d(TAG, "Value is: " + latLng);
             }
 
             @Override
@@ -49,6 +37,6 @@ public class realTimeFirebase extends AppCompatActivity {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-        // [END read_message]
+
     }
 }
