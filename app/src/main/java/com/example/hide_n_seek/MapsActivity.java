@@ -115,7 +115,7 @@ public class MapsActivity extends AppCompatActivity
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
 
                 RealTimeFirebase.publishGeoLocation(latLng);
-                Seeker.readDatabase();
+                //Seeker.readDatabase();
             }
         }
     };
