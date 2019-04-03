@@ -1,15 +1,32 @@
 package com.example.hide_n_seek;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class Menu extends AppCompatActivity {
 
     private TextView mTextMessage;
+    private String m_Text = "";
+    String personName;
+    boolean lobbyFound;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -35,10 +52,116 @@ public class Menu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
-
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+    }
+
+
+    public void createLobby(View view){
+        //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Create A Lobby Name");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        final EditText input2 = new EditText(this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                personName = "fix later";
+                createLobbyHelper(m_Text,personName);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+
+    public void createLobbyHelper(String lobbyName, String name){
+
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("Lobbies").child(lobbyName).child("PlayerList").push().setValue(name);
+    }
+
+
+
+
+
+
+
+    public void joinLobby(View view){
+        //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter an Existing Lobby Name");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                personName = "new name";
+                joinLobbyHelper(m_Text,personName);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+    }
+
+
+    public void joinLobbyHelper(final String lobbyName, final String name){
+
+        final DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Lobbies");
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (snapshot.hasChild(lobbyName)) {
+                    mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
+                    Log.d("its here", lobbyFound + "");
+                    startActivity(new Intent(Menu.this, LobbyArea.class));
+                }else{
+                    Log.d("its not here", lobbyFound + "");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    public void makeAlert(){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setMessage("Please Select any option");
+        dialog.setTitle("Dialog Box");
     }
 
 }

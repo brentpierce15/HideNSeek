@@ -6,4 +6,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_activity_menu">Menu</string>
+    <string name="button_create_lobby">Create A Lobby</string>
+    <string name="button_join_lobby">Enter Lobby Name</string>
+    <string name="title_activity_lobby_area">LobbyArea</string>
 </resources>

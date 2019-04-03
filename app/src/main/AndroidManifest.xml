@@ -16,19 +16,21 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".LobbyArea"
+            android:label="@string/title_activity_lobby_area"></activity>
+        <activity
             android:name=".GoogleSignInActivity"
             android:exported="true"
             android:label="SignIn">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".Menu"
-            android:label="Menu">
-        </activity>
-
+        <activity
+            android:name=".Menu"
+            android:label="Menu"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

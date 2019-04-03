@@ -79,14 +79,7 @@ public class GoogleSignInActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() != null ) {
                     startActivity(new Intent(GoogleSignInActivity.this, Menu.class));
-                } else {
-                    signInButton.setEnabled(true);
-                    aboutPageButton.setEnabled(true);
-                    spinner.setVisibility(View.GONE);
-                    Auth.GoogleSignInApi.signOut(googleApiClient);
-                    FirebaseAuth.getInstance().signOut();
                 }
-
             }
         };
         mAuth = FirebaseAuth.getInstance();
