@@ -24,6 +24,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -31,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class MapsActivity extends AppCompatActivity
+public class Hider extends AppCompatActivity
         implements OnMapReadyCallback {
 
     private GoogleMap mGoogleMap;
@@ -40,6 +42,7 @@ public class MapsActivity extends AppCompatActivity
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
     private FusedLocationProviderClient mFusedLocationClient;
+    private String lobbyName;
 
     private String strDateFormat = "hh:mm:ss a";
     private DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
@@ -56,7 +59,8 @@ public class MapsActivity extends AppCompatActivity
 
         mFusedLocationClient  = LocationServices.getFusedLocationProviderClient(this);
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFrag.getMapAsync(MapsActivity.this);
+        mapFrag.getMapAsync(Hider.this);
+        lobbyName = getIntent().getStringExtra("lobbyName");
     }
 
     @Override
@@ -114,8 +118,9 @@ public class MapsActivity extends AppCompatActivity
                 //move map camera
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
 
-                RealTimeFirebase.publishGeoLocation(latLng);
-                //Seeker.readDatabase();
+                DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName);
+                mDatabase.child("Hider's Location").setValue(latLng);
+
             }
         }
     };

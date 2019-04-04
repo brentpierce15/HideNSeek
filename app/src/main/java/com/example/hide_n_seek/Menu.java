@@ -91,17 +91,30 @@ public class Menu extends AppCompatActivity {
     }
 
 
-    public void createLobbyHelper(String lobbyName, String name){
+    public void createLobbyHelper(final String lobbyName, final String name){
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("Lobbies").child(lobbyName).child("PlayerList").push().setValue(name);
+        final DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Lobbies");
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                //Check to see if that lobby exists
+                if (snapshot.hasChild(lobbyName)) {
+                }else{
+                    //If it doesn't, it creates one with that name
+                    mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
+
+                    Intent intent = new Intent(Menu.this, Hider.class);
+                    intent.putExtra("lobbyName", lobbyName);
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
-
-
-
-
-
-
 
     public void joinLobby(View view){
         //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
@@ -143,10 +156,11 @@ public class Menu extends AppCompatActivity {
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.hasChild(lobbyName)) {
                     mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
-                    Log.d("its here", lobbyFound + "");
-                    startActivity(new Intent(Menu.this, LobbyArea.class));
+
+                    Intent intent = new Intent(Menu.this, Seeker.class);
+                    intent.putExtra("lobbyName", lobbyName);
+                    startActivity(intent);
                 }else{
-                    Log.d("its not here", lobbyFound + "");
                 }
             }
 

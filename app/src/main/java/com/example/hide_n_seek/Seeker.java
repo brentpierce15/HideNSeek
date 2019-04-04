@@ -35,45 +35,60 @@ import java.util.TreeMap;
 public class Seeker extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "Seekers: ";
-    LatLng latLng;
-
-
+    private GoogleMap mGoogleMap;
     private SupportMapFragment mapFrag;
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference myRef = database.getReference("User's Location2:");
+    private String lobbyName;
+    private DatabaseReference mDatabase;
+    private LatLng latLng;
+    private Marker mCurrLocationMarker;
+
+    private String strDateFormat = "hh:mm:ss a";
+    private DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
+        getSupportActionBar().setTitle("HideNSeek");
+
+        latLng = new LatLng(37.4219983,-122.084);
+
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(Seeker.this);
+
+        lobbyName = getIntent().getStringExtra("lobbyName");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider's Location");
         Log.d("seeker", "made it");
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d("seeker", "made it");
-        myRef.addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Map<String, Double> mapOfLatLng = (Map<String, Double>) dataSnapshot.getValue();
-                LatLng latLng = new LatLng(mapOfLatLng.get("latitude"), mapOfLatLng.get("longitude"));
-                Log.d(TAG, "Value is: " + mapOfLatLng);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG, "Failed to read value.", databaseError.toException());
-            }
-        });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mGoogleMap = googleMap;
+        mGoogleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Map<String, Double> mapOfLatLng = (Map<String, Double>) dataSnapshot.getValue();
+                latLng = new LatLng(mapOfLatLng.get("latitude"), mapOfLatLng.get("longitude"));
+
+                Date date = new Date();
+                String formattedDate= dateFormat.format(date);
+
+                MarkerOptions markerOptions = new MarkerOptions().position(latLng);
+
+                markerOptions.title(String.format("Player's Location at " + formattedDate ));
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

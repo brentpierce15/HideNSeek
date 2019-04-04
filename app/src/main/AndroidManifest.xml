@@ -31,6 +31,14 @@
         <activity
             android:name=".Menu"
             android:label="Menu"></activity>
+
+        <activity
+            android:name=".Hider"
+            android:label="Hider"></activity>
+
+        <activity
+            android:name=".Seeker"
+            android:label="Seeker"></activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
