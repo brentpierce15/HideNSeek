@@ -108,9 +108,9 @@ public class Menu extends AppCompatActivity {
                     startForegroundService(locatorIntent);
 
 
-//                    Intent hiderIntent = new Intent(Menu.this, Hider.class);
-//                    hiderIntent.putExtra("lobbyName", lobbyName);
-//                    startActivity(hiderIntent);
+                    Intent hiderIntent = new Intent(Menu.this, Hider.class);
+                    hiderIntent.putExtra("lobbyName", lobbyName);
+                    startActivity(hiderIntent);
                 }
             }
 

@@ -79,16 +79,11 @@ public class Hider extends AppCompatActivity
         setContentView(R.layout.activity_maps);
         getSupportActionBar().setTitle("HideNSeek");
 
-        latLng = new LatLng(37.4219983,-122.084);
-
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(Hider.this);
 
         lobbyName = getIntent().getStringExtra("lobbyName");
         mDatabase = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider's Location");
-
-
-        Log.d("seeker", "made it");
 
     }
 
