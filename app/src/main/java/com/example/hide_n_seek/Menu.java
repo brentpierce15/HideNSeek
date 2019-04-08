@@ -58,9 +58,8 @@ public class Menu extends AppCompatActivity {
 
     }
 
-
+    //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
     public void createLobby(View view){
-        //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Create A Lobby Name");
 
