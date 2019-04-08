@@ -77,6 +77,9 @@ public class Seeker extends AppCompatActivity implements OnMapReadyCallback {
                 Date date = new Date();
                 String formattedDate= dateFormat.format(date);
 
+                if (mCurrLocationMarker != null) {
+                    mCurrLocationMarker.remove();
+                }
                 MarkerOptions markerOptions = new MarkerOptions().position(latLng);
 
                 markerOptions.title(String.format("Player's Location at " + formattedDate ));

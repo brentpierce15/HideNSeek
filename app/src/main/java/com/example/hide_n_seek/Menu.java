@@ -103,9 +103,14 @@ public class Menu extends AppCompatActivity {
                     //If it doesn't, it creates one with that name
                     mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
 
-                    Intent intent = new Intent(Menu.this, Hider.class);
-                    intent.putExtra("lobbyName", lobbyName);
-                    startActivity(intent);
+                    Intent locatorIntent = new Intent(Menu.this, Locator.class);
+                    locatorIntent.putExtra("lobbyName", lobbyName);
+                    startForegroundService(locatorIntent);
+
+
+//                    Intent hiderIntent = new Intent(Menu.this, Hider.class);
+//                    hiderIntent.putExtra("lobbyName", lobbyName);
+//                    startActivity(hiderIntent);
                 }
             }
 
