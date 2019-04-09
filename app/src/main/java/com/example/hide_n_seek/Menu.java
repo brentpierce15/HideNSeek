@@ -8,12 +8,14 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,7 +27,6 @@ public class Menu extends AppCompatActivity {
     private TextView mTextMessage;
     private String m_Text = "";
     String personName;
-    boolean lobbyFound;
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -35,13 +36,6 @@ public class Menu extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    mTextMessage.setText(R.string.title_home);
-                    return true;
-                case R.id.navigation_dashboard:
-                    mTextMessage.setText(R.string.title_dashboard);
-                    return true;
-                case R.id.navigation_notifications:
-                    mTextMessage.setText(R.string.title_notifications);
                     return true;
             }
             return false;
@@ -56,6 +50,8 @@ public class Menu extends AppCompatActivity {
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        personName = account.getDisplayName().substring(0,account.getDisplayName().indexOf(" "));
     }
 
     //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
@@ -75,7 +71,6 @@ public class Menu extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 m_Text = input.getText().toString();
-                personName = "fix later";
                 createLobbyHelper(m_Text,personName);
             }
         });
@@ -101,13 +96,20 @@ public class Menu extends AppCompatActivity {
                 }else{
                     //If it doesn't, it creates one with that name
                     mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
+                    mDatabase.child(lobbyName).child("Hider").setValue(name);
+
+                    //to make sure there is always a value in the Hider's location
+                    LatLng latLng = new LatLng(37.4219983,-122.084);
+                    mDatabase.child(lobbyName).child("Hider's Location").setValue(latLng);
+
+                    mDatabase.child(lobbyName).child("Hider Found").setValue(false);
 
                     Intent locatorIntent = new Intent(Menu.this, Locator.class);
                     locatorIntent.putExtra("lobbyName", lobbyName);
                     startForegroundService(locatorIntent);
 
 
-                    Intent hiderIntent = new Intent(Menu.this, Hider.class);
+                    Intent hiderIntent = new Intent(Menu.this, DisplayOnMap.class);
                     hiderIntent.putExtra("lobbyName", lobbyName);
                     startActivity(hiderIntent);
                 }
@@ -136,7 +138,6 @@ public class Menu extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 m_Text = input.getText().toString();
-                personName = "new name";
                 joinLobbyHelper(m_Text,personName);
             }
         });
@@ -161,7 +162,11 @@ public class Menu extends AppCompatActivity {
                 if (snapshot.hasChild(lobbyName)) {
                     mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
 
-                    Intent intent = new Intent(Menu.this, Seeker.class);
+                    Intent endGameServiceIntent = new Intent(Menu.this, EndGameService.class);
+                    endGameServiceIntent.putExtra("lobbyName", lobbyName);
+                    startForegroundService(endGameServiceIntent);
+
+                    Intent intent = new Intent(Menu.this, DisplayOnMap.class);
                     intent.putExtra("lobbyName", lobbyName);
                     startActivity(intent);
                 }else{

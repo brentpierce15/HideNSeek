@@ -9,4 +9,6 @@
     <string name="button_create_lobby">Create A Lobby</string>
     <string name="button_join_lobby">Enter Lobby Name</string>
     <string name="title_activity_lobby_area">LobbyArea</string>
+    <string name="title_activity_end_screen">EndScreen</string>
+    <string name="title_activity_temp">temp</string>
 </resources>

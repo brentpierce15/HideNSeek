@@ -12,9 +12,12 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -22,8 +25,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -54,6 +60,39 @@ public class Locator extends Service {
             //Location Permission already granted
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
         }
+
+        //Checks to see if the game has ended
+        final DatabaseReference mDatabaseHiderLocation = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName);
+        mDatabaseHiderLocation.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.child("Hider Found").getValue().toString().equals("true")){
+
+                    String winner = dataSnapshot.child("Winner").getValue().toString();
+                    //to end DisplayOnMap activity
+                    //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
+                    LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(Locator.this);
+                    localBroadcastManager.sendBroadcast(new Intent("com.example.hide_n_seek.action.close"));
+
+                    mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+
+                    Intent endGameIntent = new Intent(Locator.this, EndScreen.class);
+                    endGameIntent.putExtra("lobbyName", lobbyName);
+                    endGameIntent.putExtra("winner",winner);
+                    startActivity(endGameIntent);
+
+                    stopForeground(true);
+                    stopSelf();
+                    mDatabaseHiderLocation.removeEventListener(this);
+                    FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         return a;
     }

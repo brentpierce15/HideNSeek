@@ -17,8 +17,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".LobbyArea"
-            android:label="@string/title_activity_lobby_area"></activity>
+            android:name=".EndScreen"
+            android:label="@string/title_activity_end_screen" />
         <activity
             android:name=".GoogleSignInActivity"
             android:exported="true">
@@ -30,19 +30,17 @@
         </activity>
         <activity
             android:name=".Menu"
-            android:label="Menu"></activity>
-
+            android:label="Menu" />
         <activity
-            android:name=".Hider"
-            android:label="Hider"></activity>
-
-        <activity
-            android:name=".Seeker"
-            android:label="Seeker"></activity>
+            android:name=".DisplayOnMap"
+            android:label="DisplayOnMap" />
 
         <service
             android:name=".Locator"
-            android:label="Locator"></service>
+            android:label="Locator" />
+        <service
+            android:name=".EndGameService"
+            android:label="EndGameService" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

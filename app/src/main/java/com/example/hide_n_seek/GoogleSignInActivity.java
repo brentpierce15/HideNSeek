@@ -2,30 +2,30 @@ package com.example.hide_n_seek;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.*;
-
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.*;
-import android.content.*;
+import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.text.Html;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.text.SpannableString;
-import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -35,10 +35,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
-import android.support.v7.app.*;
-import java.util.HashMap;
-import java.util.Map;
-import static android.content.ContentValues.TAG;
 
 /**
  * Taken from ACES App:
@@ -49,10 +45,8 @@ import static android.content.ContentValues.TAG;
 
 public class GoogleSignInActivity extends AppCompatActivity {
 
-    final static int PERMISSION_ALL = 1;
+
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    final static String[] PERMISSIONS = {android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION};  //Permissions for Location Services
     private SignInButton signInButton;
     private Button aboutPageButton;
     private GoogleApiClient googleApiClient;
@@ -63,8 +57,6 @@ public class GoogleSignInActivity extends AppCompatActivity {
     private ProgressBar spinner;
     private TextView privacyView;
     public static final String KEY_UPDATE_REQUIRED = "force_update_required";
-    public static final String KEY_CURRENT_VERSION = "force_update_current_version";
-    public static final String KEY_UPDATE_URL = "force_update_store_url";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
