@@ -47,6 +47,7 @@ public class EndScreen extends AppCompatActivity {
 
         textView = (TextView) findViewById(R.id.textView);
         textView.setText(winner + " Found the Hider!");
+        textView.setTextSize(20);
     }
 
     private void deleteData(){

@@ -93,6 +93,8 @@ public class Menu extends AppCompatActivity {
             public void onDataChange(DataSnapshot snapshot) {
                 //Check to see if that lobby exists
                 if (snapshot.hasChild(lobbyName)) {
+                    String message = "That lobby already exists. Please enter a different lobby name";
+                    alertBuilder("Invalid Lobby Name", message);
                 }else{
                     //If it doesn't, it creates one with that name
                     mDatabase.child(lobbyName).child("PlayerList").push().setValue(name);
@@ -170,6 +172,8 @@ public class Menu extends AppCompatActivity {
                     intent.putExtra("lobbyName", lobbyName);
                     startActivity(intent);
                 }else{
+                    String message = "That lobby does not exist. Please enter another lobby name";
+                    alertBuilder("Invalid Lobby Name", message);
                 }
             }
 
@@ -181,10 +185,19 @@ public class Menu extends AppCompatActivity {
 
     }
 
-    public void makeAlert(){
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setMessage("Please Select any option");
-        dialog.setTitle("Dialog Box");
+
+    public void alertBuilder(String title, String message){
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(Menu.this);
+        dialog.setCancelable(false);
+        dialog.setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    }
+                });
+        dialog.show();
     }
 
 }

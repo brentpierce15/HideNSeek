@@ -52,7 +52,7 @@ public class DisplayOnMap extends AppCompatActivity
     private String strDateFormat = "hh:mm:ss a";
     private DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
 
-    //so the locator service can end this activity
+
     //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
     LocalBroadcastManager mLocalBroadcastManager;
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
