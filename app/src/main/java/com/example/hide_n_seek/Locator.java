@@ -17,7 +17,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -31,8 +30,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 
@@ -42,7 +39,6 @@ public class Locator extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private String lobbyName;
     private final int ONE_MINUTE = 1000*10;
-
 
     @Override
     public void onCreate(){
@@ -57,7 +53,7 @@ public class Locator extends Service {
         createLocationRequest();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            //Location Permission already granted
+            //the FusedLocationProviderClient requests user's location with certain parameters and the request will loop every minute
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
         }
 
@@ -66,24 +62,30 @@ public class Locator extends Service {
         mDatabaseHiderLocation.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //If this value turns to true, it means the hider has been found, and the game is over
                 if(dataSnapshot.child("Hider Found").getValue().toString().equals("true")){
 
                     String winner = dataSnapshot.child("Winner").getValue().toString();
-                    //to end DisplayOnMap activity
                     //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
+                    //to end DisplayOnMap activity
                     LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(Locator.this);
                     localBroadcastManager.sendBroadcast(new Intent("com.example.hide_n_seek.action.close"));
 
+                    //stops location requests
                     mFusedLocationClient.removeLocationUpdates(mLocationCallback);
 
+                    //moves to the end screen with some data from the match
                     Intent endGameIntent = new Intent(Locator.this, EndScreen.class);
                     endGameIntent.putExtra("lobbyName", lobbyName);
                     endGameIntent.putExtra("winner",winner);
                     startActivity(endGameIntent);
 
+                    //stops service
                     stopForeground(true);
                     stopSelf();
+                    //stops listener we are currently inside of
                     mDatabaseHiderLocation.removeEventListener(this);
+                    //removes data from the match so it doesn't pile up in firebase
                     FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).removeValue();
                 }
             }
@@ -98,6 +100,7 @@ public class Locator extends Service {
     }
 
 
+    //recieves the location results and uploads it to firebase
     LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -106,10 +109,9 @@ public class Locator extends Service {
                 //The last location in the list is the newest
                 Location location = locationList.get(locationList.size() - 1);
 
-                //Place current location marker
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                //move map camera
 
+                //sets hider's location in firebase
                 DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName);
                 mDatabase.child("Hider's Location").setValue(latLng);
 
@@ -117,16 +119,13 @@ public class Locator extends Service {
         }
     };
 
+    //Location request that focuses on having a high accuracy return at expense of battery
     private void createLocationRequest(){
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(ONE_MINUTE); // one minute interval
         mLocationRequest.setFastestInterval(ONE_MINUTE);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
-
-//    private void checkLocationPermission(){
-//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
-//    }
 
     @Nullable
     @Override
@@ -135,6 +134,7 @@ public class Locator extends Service {
     }
 
     //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
+    //creates a notification channel that is necessary when putting a service to the foreground
     private void startMyOwnForeground(){
         String NOTIFICATION_CHANNEL_ID = "com.example.hide_n_seek";
         String channelName = "My Background Service";

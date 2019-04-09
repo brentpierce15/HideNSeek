@@ -14,7 +14,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class EndScreen extends AppCompatActivity {
 
-   //private TextView mTextMessage;
     private TextView textView;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -24,11 +23,8 @@ public class EndScreen extends AppCompatActivity {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    //mTextMessage.setText(R.string.title_home);
-
                     Intent homeIntent = new Intent(EndScreen.this, Menu.class);
                     startActivity(homeIntent);
-
                     return true;
             }
             return false;
@@ -48,10 +44,6 @@ public class EndScreen extends AppCompatActivity {
         textView = (TextView) findViewById(R.id.textView);
         textView.setText(winner + " Found the Hider!");
         textView.setTextSize(20);
-    }
-
-    private void deleteData(){
-
     }
 
 }

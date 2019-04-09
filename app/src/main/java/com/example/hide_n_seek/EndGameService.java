@@ -30,7 +30,52 @@ public class EndGameService extends Service {
         startMyOwnForeground();
 
     }
+
+    public int onStartCommand(Intent intent, int a, int b){
+        lobbyName = intent.getStringExtra("lobbyName");
+        seekerName = intent.getStringExtra("seekerName");
+
+        //Checks to see if the game has ended
+        final DatabaseReference mDatabaseHiderLocation = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName);
+        mDatabaseHiderLocation.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //If this value turns to true, it means the hider has been found, and the game is over
+                if(dataSnapshot.child("Hider Found").getValue().toString().equals("true")){
+
+                    String winner = dataSnapshot.child("Winner").getValue().toString();
+
+                    //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
+                    //to end DisplayOnMap activity
+                    LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(EndGameService.this);
+                    localBroadcastManager.sendBroadcast(new Intent("com.example.hide_n_seek.action.close"));
+
+                    //moves to the end screen with some data from the match
+                    Intent endGameIntent = new Intent(EndGameService.this, EndScreen.class);
+                    endGameIntent.putExtra("lobbyName", lobbyName);
+                    endGameIntent.putExtra("winner",winner);
+                    startActivity(endGameIntent);
+
+                    //stops service
+                    stopForeground(true);
+                    stopSelf();
+                    //stops listener we are currently inside of
+                    mDatabaseHiderLocation.removeEventListener(this);
+                    FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).removeValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        return a;
+    }
+
     //https://stackoverflow.com/questions/47531742/startforeground-fail-after-upgrade-to-android-8-1
+    //creates a notification channel that is necessary when putting a service to the foreground
     private void startMyOwnForeground(){
         String NOTIFICATION_CHANNEL_ID = "com.example.hide_n_seek";
         String channelName = "My Background Service";
@@ -49,45 +94,6 @@ public class EndGameService extends Service {
         startForeground(3, notification);
     }
 
-    public int onStartCommand(Intent intent, int a, int b){
-        lobbyName = intent.getStringExtra("lobbyName");
-        seekerName = intent.getStringExtra("seekerName");
-
-        //Checks to see if the game has ended
-        final DatabaseReference mDatabaseHiderLocation = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName);
-        mDatabaseHiderLocation.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.child("Hider Found").getValue().toString().equals("true")){
-
-                    String winner = dataSnapshot.child("Winner").getValue().toString();
-
-                    //to end DisplayOnMap activity
-                    //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
-                    LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(EndGameService.this);
-                    localBroadcastManager.sendBroadcast(new Intent("com.example.hide_n_seek.action.close"));
-
-
-                    Intent endGameIntent = new Intent(EndGameService.this, EndScreen.class);
-                    endGameIntent.putExtra("lobbyName", lobbyName);
-                    endGameIntent.putExtra("winner",winner);
-                    startActivity(endGameIntent);
-
-                    stopForeground(true);
-                    stopSelf();
-                    mDatabaseHiderLocation.removeEventListener(this);
-                    FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).removeValue();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        return a;
-    }
 
     @Nullable
     @Override

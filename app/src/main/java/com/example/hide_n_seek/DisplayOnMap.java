@@ -8,9 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -38,7 +36,6 @@ public class DisplayOnMap extends AppCompatActivity
         implements OnMapReadyCallback {
 
 
-    private static final String TAG = "Seekers: ";
     private GoogleMap mGoogleMap;
     private SupportMapFragment mapFrag;
     private String lobbyName;
@@ -48,23 +45,6 @@ public class DisplayOnMap extends AppCompatActivity
     private LatLng latLng;
     private Marker mCurrLocationMarker;
     private ValueEventListener hiderListener;
-
-    private String strDateFormat = "hh:mm:ss a";
-    private DateFormat dateFormat = new SimpleDateFormat(strDateFormat);
-
-
-    //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
-    LocalBroadcastManager mLocalBroadcastManager;
-    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals("com.example.hide_n_seek.action.close")){
-                mDatabaseHiderLocation.removeEventListener(hiderListener);
-                mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
-                finish();
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +56,8 @@ public class DisplayOnMap extends AppCompatActivity
         lobbyName = getIntent().getStringExtra("lobbyName");
         mDatabaseHiderLocation = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider's Location");
         mDatabaseHiderFound = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider Found");
+
+        //gets the name of the Hider
         DatabaseReference nameRef = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider");
         nameRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -89,14 +71,17 @@ public class DisplayOnMap extends AppCompatActivity
             }
         });
 
+        //SupportMapFragment is a wrapper around a view of a map.
+        // Being a fragment, this component can be added to an activity's layout file with some XML.
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(DisplayOnMap.this);
 
+        //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
+        //establishes the broadcast manager that can end the activity
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction("com.example.hide_n_seek.action.close");
         mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, mIntentFilter);
-
 
     }
 
@@ -106,23 +91,24 @@ public class DisplayOnMap extends AppCompatActivity
         mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
+        //Whenever the hider location gets updated, the code in here triggers
         mDatabaseHiderLocation.addValueEventListener(hiderListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //gets the hider's location
                 Map<String, Double> mapOfLatLng = (Map<String, Double>) dataSnapshot.getValue();
                 latLng = new LatLng(mapOfLatLng.get("latitude"), mapOfLatLng.get("longitude"));
-
-                Date date = new Date();
-                String formattedDate= dateFormat.format(date);
 
                 if (mCurrLocationMarker != null) {
                     mCurrLocationMarker.remove();
                 }
+                //creates a marker for the google map
                 MarkerOptions markerOptions = new MarkerOptions().position(latLng);
-
-                markerOptions.title(String.format(hiderName + "'s Location at " + formattedDate));
+                markerOptions.title(String.format(hiderName + "'s Location"));
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                 mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
+
+                //moves google maps to the hider's location
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
             }
 
@@ -135,6 +121,8 @@ public class DisplayOnMap extends AppCompatActivity
     }
 
 
+    //If someone clicks the found button, it sets the hiderfound value in firebase to "true"
+    //and begins the end game sequence.
     public void onClickFound(View view){
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Winner")
@@ -146,5 +134,19 @@ public class DisplayOnMap extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
     }
+
+    //https://stackoverflow.com/questions/25841544/how-to-finish-activity-from-service-class-in-android
+    //A receiver that when triggered, shuts down the activity
+    LocalBroadcastManager mLocalBroadcastManager;
+    BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("com.example.hide_n_seek.action.close")){
+                mDatabaseHiderLocation.removeEventListener(hiderListener);
+                mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
+                finish();
+            }
+        }
+    };
 
 }
