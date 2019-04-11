@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -45,6 +47,8 @@ public class DisplayOnMap extends AppCompatActivity
     private LatLng latLng;
     private Marker mCurrLocationMarker;
     private ValueEventListener hiderListener;
+    private boolean isHider;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,7 @@ public class DisplayOnMap extends AppCompatActivity
         getSupportActionBar().setTitle("HideNSeek");
 
         lobbyName = getIntent().getStringExtra("lobbyName");
+        isHider = getIntent().getBooleanExtra("isHider",true);
         mDatabaseHiderLocation = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider's Location");
         mDatabaseHiderFound = FirebaseDatabase.getInstance().getReference().child("Lobbies").child(lobbyName).child("Hider Found");
 
@@ -82,6 +87,12 @@ public class DisplayOnMap extends AppCompatActivity
         IntentFilter mIntentFilter = new IntentFilter();
         mIntentFilter.addAction("com.example.hide_n_seek.action.close");
         mLocalBroadcastManager.registerReceiver(mBroadcastReceiver, mIntentFilter);
+
+        //if its the hider, we don't want them to be able to end the game!
+        if(isHider){
+            Button foundHiderBtn = (Button) mapFrag.getView().findViewById(R.id.foundBtn);
+            foundHiderBtn.setVisibility(foundHiderBtn.GONE);
+        }
 
     }
 

@@ -19,11 +19,15 @@ import android.widget.EditText;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class Menu extends AppCompatActivity {
 
@@ -60,6 +64,9 @@ public class Menu extends AppCompatActivity {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
         }
+
+        getPicture();
+
     }
 
     //code gotten from https://stackoverflow.com/questions/10903754/input-text-dialog-android
@@ -115,6 +122,7 @@ public class Menu extends AppCompatActivity {
                     //foreground service to grab user's gps location and check to see if the game ended
                     Intent locatorIntent = new Intent(Menu.this, Locator.class);
                     locatorIntent.putExtra("lobbyName", lobbyName);
+                    locatorIntent.putExtra("isHider",true);
                     startForegroundService(locatorIntent);
 
                     //start the DisplayOnMap Activty
@@ -180,6 +188,7 @@ public class Menu extends AppCompatActivity {
                     //start the DisplayOnMap Activty
                     Intent intent = new Intent(Menu.this, DisplayOnMap.class);
                     intent.putExtra("lobbyName", lobbyName);
+                    intent.putExtra("isHider",false);
                     startActivity(intent);
 
                 }else{//If the lobby does not exist, it gives the user an alert saying so
@@ -209,6 +218,25 @@ public class Menu extends AppCompatActivity {
                     }
                 });
         dialog.show();
+    }
+
+    private void getPicture(){
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+        StorageReference islandRef = storageRef.child("images/Zion.jfif.jpg");
+        final long ONE_MEGABYTE = 1024 * 1024;
+        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Data for "images/island.jpg" is returns, use this as needed
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
+
     }
 
 }
