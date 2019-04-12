@@ -30,7 +30,7 @@
         </activity>
         <activity
             android:name=".Menu"
-            android:label="Menu" />
+            android:label="@string/title_activity_maps" />
         <activity
             android:name=".DisplayOnMap"
             android:label="DisplayOnMap" />
@@ -40,7 +40,7 @@
             android:label="Locator" />
         <service
             android:name=".EndGameService"
-            android:label="EndGameService" />
+            android:label="End of the Game" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

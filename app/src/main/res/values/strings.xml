@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Hide-N-Seek</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">HideNSeek</string>
     <string name="title_activity_sign__in">Sign_In</string>
-    <string name="title_home">Home</string>
+    <string name="title_home">Menu</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_activity_menu">Menu</string>
@@ -11,4 +11,9 @@
     <string name="title_activity_lobby_area">LobbyArea</string>
     <string name="title_activity_end_screen">EndScreen</string>
     <string name="title_activity_temp">temp</string>
+    <string name="title_end_screen">End of the Game</string>
+    <string name="about">About Page</string>
+    <string name="rules">How to Play</string>
+
+
 </resources>
