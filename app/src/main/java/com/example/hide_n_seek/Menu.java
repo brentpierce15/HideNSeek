@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -12,9 +13,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -34,6 +38,8 @@ public class Menu extends AppCompatActivity {
     private String lobbyNameInput = "";
     String personName;
     private int locationRequestCode = 101;
+    private ImageView img;
+
 
 
 
@@ -65,6 +71,7 @@ public class Menu extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, locationRequestCode);
         }
 
+        img=(ImageView) findViewById(R.id.img);
         getPicture();
 
     }
@@ -223,12 +230,13 @@ public class Menu extends AppCompatActivity {
     private void getPicture(){
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
-        StorageReference islandRef = storageRef.child("images/Zion.jfif.jpg");
-        final long ONE_MEGABYTE = 1024 * 1024;
-        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+        StorageReference homeScreenRef = storageRef.child("images/Zion.jpg");
+        final long FIVE_MEGABYTES = 1024 * 1024 * 5;
+        homeScreenRef.getBytes(FIVE_MEGABYTES).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
-                // Data for "images/island.jpg" is returns, use this as needed
+                Log.d("success","got picture");
+                img.setImageBitmap(BitmapFactory.decodeByteArray(bytes,0,bytes.length));
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -237,6 +245,24 @@ public class Menu extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void aboutPage(View view){
+        String message = "Created by Brent Pierce for my Senior Inquiry class at Augustana College. \n\n" +
+                "Thank you to Professor Forrest Stonedahl, Professor Diane Mueller, and Professor " +
+                "Andrew Sward for their help and guidence in my time in the Computer Science Department.";
+        alertBuilder("About", message);
+    }
+
+    public void howToPlay(View view){
+        String message = "Tap the \"Create A Lobby\" buttton and enter a lobby name. The person who " +
+                "creates the lobby will be the hider. Anybody else playing tab the \"Enter A " +
+                "Lobby Name\" button and type in the exact lobby name your friend created. They will be a " +
+                "seeker. \n\nEvery minute, the GPS location of the hider will be sent to you via a marker " +
+                "on google maps. Give the hider as much time as you want to hide initially. When the " +
+                "game begins, start searching for them! \n\nWhen you see the hider, hit the " +
+                "\"Found Hider \" to end the game";
+        alertBuilder("How to Play", message);
     }
 
 }
