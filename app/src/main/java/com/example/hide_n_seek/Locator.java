@@ -32,13 +32,17 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
-
+/*
+    A service that retrieves location data from the Hider. This needed to be a service as services
+    can run in the background, unlike activities. That way a user could access other functions of
+    their phone while playing.
+ */
 public class Locator extends Service {
 
     private LocationRequest mLocationRequest;
     private FusedLocationProviderClient mFusedLocationClient;
     private String lobbyName;
-    private final int ONE_MINUTE = 1000*10;
+    private final int ONE_MINUTE = 1000*60;
 
     @Override
     public void onCreate(){
